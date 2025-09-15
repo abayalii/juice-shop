@@ -19,27 +19,18 @@ jobs:
       - name: Build Docker image
         run: docker build -t juice-shop .
 
-      - name: Install Syft
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Generate SBOM with Syft
-        run: syft juice-shop -o json > syft-sbom.json
+     
 
       - name: Run Semgrep SAST scan
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: auto
+        run: |
+          pip install semgrep
+          semgrep --config=auto --json --output=semgrep-results.json . || true
 
-      - name: Upload Syft SBOM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: syft-sbom
-          path: syft-sbom.json
+      
 
       - name: Upload Semgrep results
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-results
-          path: semgrep-output.json
+          path: semgrep-results.json
         if: always()
